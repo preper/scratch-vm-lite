@@ -459,10 +459,6 @@ class VirtualMachine extends EventEmitter {
         const runtime = this.runtime;
         const deserializePromise = function () {
             const projectVersion = projectJSON.projectVersion;
-            if (projectVersion === 2) {
-                const sb2 = require('./serialization/sb2');
-                return sb2.deserialize(projectJSON, runtime, false, zip);
-            }
             if (projectVersion === 3) {
                 const sb3 = require('./serialization/sb3');
                 return sb3.deserialize(projectJSON, runtime, zip);
@@ -559,9 +555,6 @@ class VirtualMachine extends EventEmitter {
         return validationPromise
             .then(validatedInput => {
                 const projectVersion = validatedInput[0].projectVersion;
-                if (projectVersion === 2) {
-                    return this._addSprite2(validatedInput[0], validatedInput[1]);
-                }
                 if (projectVersion === 3) {
                     return this._addSprite3(validatedInput[0], validatedInput[1]);
                 }
@@ -575,21 +568,6 @@ class VirtualMachine extends EventEmitter {
                 }
                 return Promise.reject(`${errorPrefix} ${error}`);
             });
-    }
-
-    /**
-     * Add a single sprite from the "Sprite2" (i.e., SB2 sprite) format.
-     * @param {object} sprite Object representing 2.0 sprite to be added.
-     * @param {?ArrayBuffer} zip Optional zip of assets being referenced by json
-     * @returns {Promise} Promise that resolves after the sprite is added
-     */
-    _addSprite2 (sprite, zip) {
-        // Validate & parse
-
-        const sb2 = require('./serialization/sb2');
-        return sb2.deserialize(sprite, this.runtime, true, zip)
-            .then(({targets, extensions}) =>
-                this.installTargets(targets, extensions, false));
     }
 
     /**
